@@ -1,7 +1,41 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import { store } from './app/store'
+import { Provider } from 'react-redux'
+import { createSlice } from '@reduxjs/toolkit'
 
+const initialState={
+ value: 0, 
+}
+
+export const counterSlice = createSlice({
+  name: 'counter',
+  initialState,
+  reducers: {
+    increment: (state) => {
+      // Redux Toolkit allows us to write "mutating" logic in reducers. It
+      // doesn't actually mutate the state because it uses the Immer library,
+      // which detects changes to a "draft state" and produces a brand new
+      // immutable state based off those changes
+      state.value += 1
+    },
+    decrement: (state) => {
+      state.value -= 1
+    },
+    incrementByAmount: (state, action) => {
+      state.value += action.payload
+    },
+  },
+})
+
+// Action creators are generated for each case reducer function
+export const { increment, decrement, incrementByAmount } = counterSlice.actions
+
+export default counterSlice.reducer
+
+
+//code begins here
 function Square(props) {
     return (
       <button className="square" onClick={props.onClick}>
@@ -44,8 +78,11 @@ function Square(props) {
   }
   
   class Game extends React.Component {
+
+
     constructor(props) {
       super(props);
+      //fills the board with the history of the last state in the board.
       this.state = {
         history: [
           {
@@ -84,10 +121,14 @@ function Square(props) {
     }
   
     render() {
+      //State store of history within  the game using React Normally
       const history = this.state.history;
+      //adding current state of the board to the history each turn.
       const current = history[this.state.stepNumber];
+      //invocation of calculateWinner method, referenced at the end of the code.
       const winner = calculateWinner(current.squares);
   
+      //method describing the map of moves and steps in the list of history.
       const moves = history.map((step, move) => {
         const desc = move ? "Go to move #" + move : "Go to game start";
         return (
@@ -98,6 +139,7 @@ function Square(props) {
       });
   
       let status;
+      //This code checks whether a user has won.
       if (winner) {
         status = "Winner: " + winner;
       } else {
@@ -122,7 +164,12 @@ function Square(props) {
   
   // ========================================
   
-  ReactDOM.render(<Game />, document.getElementById("root"));
+  ReactDOM.render(
+    //Redux provider for state storing
+    <Provider store={store}>
+  <Game />,       
+    </Provider>,
+  document.getElementById("root"));
   
   function calculateWinner(squares) {
     const lines = [
